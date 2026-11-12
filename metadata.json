@@ -1,0 +1,6 @@
+{
+  "name": "Bagha Chheli (ବାଘ ଛେଳି) – WebRTC Online Multiplayer & Strategy Game",
+  "description": "Play Bagha Chheli (ବାଘ ଛେଳି), the traditional Odia Tiger and Goat board game online! Create WebRTC multiplayer rooms (SBXXXX), watch live as a spectator, or play solo vs AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
