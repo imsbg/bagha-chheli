@@ -4,9 +4,9 @@ export const translations = {
   en: {
     appTitle: 'Bagha Chheli',
     appSubtitle: 'Traditional Tigers & Goats',
-    odiaGamesHub: 'All Odia Games',
+    odiaGamesHub: 'Desi Games',
     homeMenuBtn: 'Home',
-    homeMenuSub: 'More Traditional Odia Games',
+    homeMenuSub: 'Desi Games',
     shareWithFriend: 'Share Game',
     shareModalTitle: 'Share Bagha Chheli with Friends',
     shareModalSubtitle:
@@ -258,9 +258,9 @@ export const translations = {
   or: {
     appTitle: 'ବାଘ ଛେଳି',
     appSubtitle: 'ଓଡ଼ିଆ ପାରମ୍ପରିକ ଖେଳ',
-    odiaGamesHub: 'ସବୁ ଓଡ଼ିଆ ଖେଳ',
+    odiaGamesHub: 'Desi Games',
     homeMenuBtn: 'ହୋମ୍',
-    homeMenuSub: 'ଅନ୍ୟାନ୍ୟ ଓଡ଼ିଆ ଖେଳ',
+    homeMenuSub: 'Desi Games',
     shareWithFriend: 'ଶେୟାର',
     shareModalTitle: 'ସାଙ୍ଗମାନଙ୍କ ସହ ଶେୟାର କରନ୍ତୁ',
     shareModalSubtitle:

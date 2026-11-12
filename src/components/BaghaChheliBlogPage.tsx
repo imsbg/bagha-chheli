@@ -209,11 +209,7 @@ export const BaghaChheliBlogPage: React.FC<BaghaChheliBlogPageProps> = ({
                 }`}
               >
                 <Home className="w-4 h-4 text-orange-500 shrink-0" />
-                <span>
-                  {isOdia
-                    ? 'ସବୁ ଓଡ଼ିଆ ଖେଳ ଦେଖନ୍ତୁ'
-                    : 'Explore All Odia Games'}
-                </span>
+                <span>Desi Games</span>
                 <ExternalLink className="w-3.5 h-3.5 opacity-75 shrink-0" />
               </a>
             </div>
@@ -468,8 +464,8 @@ export const BaghaChheliBlogPage: React.FC<BaghaChheliBlogPageProps> = ({
               <Trophy className="w-4 h-4 text-amber-500" />
               <span>
                 {isOdia
-                  ? 'ଅନ୍ୟାନ୍ୟ ଲୋକପ୍ରିୟ ଓଡ଼ିଆ ଖେଳ:'
-                  : 'Play More Traditional Odia Games:'}
+                  ? 'ଅନ୍ୟାନ୍ୟ ଲୋକପ୍ରିୟ Desi Games:'
+                  : 'Play More Desi Games:'}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
@@ -480,7 +476,7 @@ export const BaghaChheliBlogPage: React.FC<BaghaChheliBlogPageProps> = ({
                 className="h-9 px-4 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 text-amber-400 border border-orange-500/30 text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
               >
                 <Home className="w-3.5 h-3.5" />
-                <span>DesiGames</span>
+                <span>Desi Games</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
               <a
