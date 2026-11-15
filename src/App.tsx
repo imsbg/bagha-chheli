@@ -19,6 +19,7 @@ import {
   isValidRoomCode,
   getBestBotAction,
   PlayerSide,
+  InitialGoatsOption,
 } from './game/rules';
 import { RoomHeader } from './components/RoomHeader';
 import { RoomLobby } from './components/RoomLobby';
@@ -98,6 +99,15 @@ export default function App() {
       return saved === null ? true : saved === 'true';
     } catch {
       return true;
+    }
+  });
+
+  const [hideSpectatorReactions, setHideSpectatorReactions] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('baghachheli_hide_spectator_emojis');
+      return saved === 'true';
+    } catch {
+      return false;
     }
   });
 
@@ -231,6 +241,19 @@ export default function App() {
     });
   };
 
+  const toggleHideSpectatorReactions = () => {
+    sound.playClick();
+    setHideSpectatorReactions((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('baghachheli_hide_spectator_emojis', String(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  };
+
   const pushReaction = useCallback(
     (emoji: string, senderName: string, senderSide: PlayerSide | 'SPECTATOR') => {
       sound.playReaction();
@@ -298,7 +321,8 @@ export default function App() {
       makePublic: boolean,
       initialGuestOverride?: PlayerInfo | null,
       smartHintsEnabled: boolean = false,
-      hostSide: PlayerSide = 'TIGER'
+      hostSide: PlayerSide = 'TIGER',
+      initialGoatsBatch: InitialGoatsOption = 4
     ) => {
       if (networkRef.current) {
         networkRef.current.destroy();
@@ -341,7 +365,8 @@ export default function App() {
         },
         initialGuestOverride,
         smartHintsEnabled,
-        hostSide
+        hostSide,
+        initialGoatsBatch
       );
 
       networkRef.current = room;
@@ -387,14 +412,25 @@ export default function App() {
   const handleCreateRoom = (
     playerName: string,
     makePublic: boolean,
-    smartHints: boolean
+    smartHints: boolean,
+    initialGoatsBatch: InitialGoatsOption = 4
   ) => {
     sound.playClick();
     if (playerName.trim()) {
       handleSaveDefaultName(playerName.trim());
     }
     const newCode = generateRoomCode();
-    startNetworkRoom(newCode, 'host', playerName, 'online', makePublic, null, smartHints, 'TIGER');
+    startNetworkRoom(
+      newCode,
+      'host',
+      playerName,
+      'online',
+      makePublic,
+      null,
+      smartHints,
+      'TIGER',
+      initialGoatsBatch
+    );
   };
 
   const handleJoinRoom = (code: string, playerName: string) => {
@@ -417,7 +453,8 @@ export default function App() {
     playerName: string,
     playerSide: PlayerSide,
     makePublic: boolean,
-    smartHints: boolean
+    smartHints: boolean,
+    initialGoatsBatch: InitialGoatsOption = 4
   ) => {
     sound.playClick();
     if (playerName.trim()) {
@@ -440,11 +477,17 @@ export default function App() {
       makePublic,
       botGuest,
       smartHints,
-      playerSide
+      playerSide,
+      initialGoatsBatch
     );
   };
 
-  const handlePassAndPlay = (playerName: string, smartHints: boolean) => {
+  const handlePassAndPlay = (
+    playerName: string,
+    player2Name: string,
+    smartHints: boolean,
+    initialGoatsBatch: InitialGoatsOption = 4
+  ) => {
     sound.playClick();
     if (playerName.trim()) {
       handleSaveDefaultName(playerName.trim());
@@ -452,7 +495,9 @@ export default function App() {
     const newCode = generateRoomCode();
     const localPlayer2: PlayerInfo = {
       id: 'local-guest',
-      name: lang === 'or' ? 'ଖେଳାଳି ୨ (ଛେଳି)' : 'Player 2 (Goat)',
+      name:
+        player2Name.trim() ||
+        (lang === 'or' ? 'ଖେଳାଳି ୨ (ଛେଳି)' : 'Player 2 (Goat)'),
       role: 'guest',
       side: 'GOAT',
       connected: true,
@@ -465,11 +510,12 @@ export default function App() {
       true,
       localPlayer2,
       smartHints,
-      'TIGER'
+      'TIGER',
+      initialGoatsBatch
     );
   };
 
-  // Trigger AI Bot Move when it's Bot's turn in Solo Mode
+  // Trigger AI Bot Move when it's Bot's turn in Solo Mode (supports multi-jump chain captures & anti-repetition)
   useEffect(() => {
     if (gameMode !== 'bot' || !gameState) return;
     const botSide = gameState.players.guest?.side;
@@ -479,11 +525,11 @@ export default function App() {
       gameState.currentTurn === botSide
     ) {
       botTimeoutRef.current = setTimeout(() => {
-        const botMove = getBestBotAction(gameState);
+        const botMove = getBestBotAction(gameState, gameState.currentRoundMoves);
         if (botMove && networkRef.current) {
           networkRef.current.performBoardAction(botMove.from, botMove.to, botSide);
         }
-      }, 480);
+      }, 460);
     }
     return () => {
       if (botTimeoutRef.current) clearTimeout(botTimeoutRef.current);
@@ -494,6 +540,8 @@ export default function App() {
     gameState?.currentTurn,
     gameState?.board,
     gameState?.phase,
+    gameState?.chainCaptureTigerIndex,
+    gameState?.currentRoundMoves.length,
   ]);
 
   const handleBoardAction = (
@@ -700,6 +748,8 @@ export default function App() {
             lang={lang}
             showBoardCoords={showBoardCoords}
             localClientId={networkRef.current?.localClientId}
+            hideSpectatorReactions={hideSpectatorReactions}
+            onToggleHideSpectatorReactions={toggleHideSpectatorReactions}
           />
           <GameDataFooter state={gameState} theme={theme} lang={lang} />
         </>
@@ -834,6 +884,8 @@ export default function App() {
         onToggleDefaultSmartHints={toggleDefaultSmartHints}
         showBoardCoords={showBoardCoords}
         onToggleShowBoardCoords={toggleShowBoardCoords}
+        hideSpectatorReactions={hideSpectatorReactions}
+        onToggleHideSpectatorReactions={toggleHideSpectatorReactions}
       />
 
       <ShareFriendModal

@@ -21,7 +21,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ theme, lang }) => {
   const isDark = theme === 'dark';
 
   return (
-    <div className="w-full sticky bottom-0 z-40 px-2.5 sm:px-4 pb-2 pt-1 backdrop-blur-md">
+    <div className="w-full sticky bottom-0 z-40 mt-auto px-2.5 sm:px-4 pb-2 pt-1 backdrop-blur-md">
       <div className="max-w-6xl mx-auto">
         <a
           href={PLAY_STORE_URL}

@@ -12,6 +12,7 @@ import {
   Check,
   Languages,
   Hash,
+  EyeOff,
 } from 'lucide-react';
 import { Language, translations } from '../utils/translations';
 import { liveLobby } from '../network/liveLobby';
@@ -31,6 +32,8 @@ interface SettingsModalProps {
   onToggleDefaultSmartHints: () => void;
   showBoardCoords: boolean;
   onToggleShowBoardCoords: () => void;
+  hideSpectatorReactions?: boolean;
+  onToggleHideSpectatorReactions?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -48,6 +51,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onToggleDefaultSmartHints,
   showBoardCoords,
   onToggleShowBoardCoords,
+  hideSpectatorReactions = false,
+  onToggleHideSpectatorReactions,
 }) => {
   const [nameInput, setNameInput] = useState(defaultPlayerName);
   const [cacheCleared, setCacheCleared] = useState(false);
@@ -255,6 +260,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {showBoardCoords ? (lang === 'or' ? 'ଅନ୍' : 'ON') : (lang === 'or' ? 'ଅଫ୍' : 'OFF')}
             </button>
           </div>
+
+          {/* Hide Emoji Notifications from Spectators */}
+          {onToggleHideSpectatorReactions && (
+            <div
+              className={`p-3.5 rounded-2xl border flex items-center justify-between gap-2 ${
+                isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'
+              }`}
+            >
+              <div>
+                <div className="flex items-center gap-2 font-bold">
+                  <EyeOff className="w-4 h-4 text-purple-400" />
+                  <span>{t.hideSpectatorEmojisSetting}</span>
+                </div>
+                <p className="text-[11px] opacity-70 mt-0.5">{t.hideSpectatorEmojisDesc}</p>
+              </div>
+              <button
+                type="button"
+                onClick={onToggleHideSpectatorReactions}
+                data-testid="toggle-hide-spectator-emojis-btn"
+                className={`h-8 px-3 rounded-xl font-bold text-xs border transition-all whitespace-nowrap shrink-0 ${
+                  hideSpectatorReactions
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                    : isDark
+                    ? 'bg-white/5 text-slate-400 border-white/10'
+                    : 'bg-slate-200 text-slate-600 border-slate-300'
+                }`}
+              >
+                {hideSpectatorReactions ? (lang === 'or' ? 'ଅନ୍' : 'ON') : (lang === 'or' ? 'ଅଫ୍' : 'OFF')}
+              </button>
+            </div>
+          )}
 
           {/* Clear Phone Cache */}
           <div

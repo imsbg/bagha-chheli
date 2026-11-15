@@ -275,7 +275,7 @@
         color: var(--text-main);
         font-family: 'Noto Sans Oriya', sans-serif;
         -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
+        overflow-x: clip;
       }
 
       #github-seo-blog-static {
@@ -317,6 +317,7 @@
       }
 
       .gh-header {
+        position: -webkit-sticky;
         position: sticky;
         top: 0;
         z-index: 50;
@@ -654,9 +655,11 @@
       }
 
       .gh-promo-sticky {
+        position: -webkit-sticky;
         position: sticky;
         bottom: 0;
         z-index: 40;
+        margin-top: auto;
         padding: 0.35rem 0.75rem 0.5rem;
       }
       .gh-promo-bar {
@@ -873,8 +876,12 @@
                     <circle cx="25" cy="100" r="1.8" /><circle cx="75" cy="100" r="1.8" />
                   </g>
 
-                  <!-- Capture Landing Target Rings at (0,100) and (100,100) -->
+                  <!-- Capture Landing Target Rings at (0,50), (100,50), (0,100), and (100,100) -->
                   <g>
+                    <circle cx="0" cy="50" r="6.2" fill="rgba(244, 63, 94, 0.22)" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="2 1.5" />
+                    <circle cx="0" cy="50" r="2.4" fill="#F43F5E" />
+                    <circle cx="100" cy="50" r="6.2" fill="rgba(244, 63, 94, 0.22)" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="2 1.5" />
+                    <circle cx="100" cy="50" r="2.4" fill="#F43F5E" />
                     <circle cx="0" cy="100" r="6.2" fill="rgba(244, 63, 94, 0.22)" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="2 1.5" />
                     <circle cx="0" cy="100" r="2.4" fill="#F43F5E" />
                     <circle cx="100" cy="100" r="6.2" fill="rgba(244, 63, 94, 0.22)" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="2 1.5" />

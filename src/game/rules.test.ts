@@ -160,3 +160,64 @@ test('Smart AI Bot produces valid actions across phases', () => {
   }
   assert.equal(state.phase, 'MAIN_PLAY');
 });
+
+test('Configurable initial Goats (6 or 8) keeps 4 Tigers compulsory and places 6 or 8 Goats in Phase 1B', () => {
+  for (const initialBatch of [6, 8] as const) {
+    let state = createInitialCoreState(initialBatch);
+    assert.equal(state.tigersToPlace, 4);
+    assert.equal(state.goatsToPlaceInitially, initialBatch);
+    assert.equal(state.initialGoatsBatch, initialBatch);
+
+    // Place 4 compulsory Tigers
+    for (let i = 0; i < 4; i++) {
+      const res = applyPlayerAction(state, null, i, 'TIGER');
+      assert.ok(res);
+      state = res.nextState;
+    }
+    assert.equal(state.phase, 'GOAT_INITIAL_PLACEMENT');
+
+    // Place `initialBatch` Goats in Phase 1B
+    for (let g = 0; g < initialBatch; g++) {
+      assert.equal(state.phase, 'GOAT_INITIAL_PLACEMENT');
+      const res = applyPlayerAction(state, null, 4 + g, 'GOAT');
+      assert.ok(res);
+      state = res.nextState;
+    }
+    assert.equal(state.phase, 'MAIN_PLAY');
+    assert.equal(state.goatsPlacedTotal, initialBatch);
+    assert.equal(state.goatsOnBoard, initialBatch);
+  }
+});
+
+test('Multi-jump chain capture allows a Tiger to capture multiple Goats in a single turn', () => {
+  let state = createInitialCoreState();
+  state.phase = 'MAIN_PLAY';
+  state.currentTurn = 'TIGER';
+  state.tigersToPlace = 0;
+  state.goatsToPlaceInitially = 0;
+  state.board[0] = 'TIGER';
+  state.board[1] = 'GOAT';
+  state.board[2] = null;
+  state.board[3] = 'GOAT';
+  state.board[4] = null;
+  state.goatsOnBoard = 2;
+  state.goatsPlacedTotal = 6;
+
+  // First capture jump: 0 -> 2 (capturing 1)
+  const jump1 = applyPlayerAction(state, 0, 2, 'TIGER');
+  assert.ok(jump1);
+  state = jump1.nextState;
+  assert.equal(state.goatsCaptured, 1);
+  // Since 2 -> 4 (over 3) is immediately available, it stays TIGER's turn with chainCaptureTigerIndex = 2
+  assert.equal(state.currentTurn, 'TIGER');
+  assert.equal(state.chainCaptureTigerIndex, 2);
+
+  // Second capture jump in same turn: 2 -> 4 (capturing 3)
+  const jump2 = applyPlayerAction(state, 2, 4, 'TIGER');
+  assert.ok(jump2);
+  state = jump2.nextState;
+  assert.equal(state.goatsCaptured, 2);
+  assert.equal(state.chainCaptureTigerIndex, null);
+  assert.equal(state.currentTurn, 'GOAT');
+});
+

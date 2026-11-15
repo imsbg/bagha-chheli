@@ -1,13 +1,13 @@
 /**
- * Bagha Chheli (ବାଘ ଛେଳି) — Core Game Rules, Board Topology, Move Validation & Smart AI
- * Preserves the exact traditional Odia Bagha Chheli rules:
+ * Bagha Chheli (ବାଘ ଛେଳି) — Core Game Rules, Board Topology, Move Validation & Pro Tactical AI
+ * Preserves the exact traditional Odia Bagha Chheli rules with regional options:
  * - 25 points (5x5 Alquerque grid with 8-way & 4-way intersections)
- * - Phase 1A (TIGER_PLACEMENT): Tiger places all 4 tigers on any empty points
- * - Phase 1B (GOAT_INITIAL_PLACEMENT): Goat places first 4 goats on any empty points
- * - Phase 2 (MAIN_PLAY): Tigers move/capture; Goats place 1 new goat per turn until 20 placed
+ * - Phase 1A (TIGER_PLACEMENT): Tiger places all 4 tigers (compulsory) on any empty points
+ * - Phase 1B (GOAT_INITIAL_PLACEMENT): Goat places initial batch of 4, 6, or 8 goats on any empty points
+ * - Phase 2 (MAIN_PLAY): Tigers move/capture (including multi-jump chain captures); Goats place 1 new goat per turn until 20 placed
  * - Phase 3 (GOAT_MOVEMENT): Once all 20 goats are placed, Goats move 1 adjacent step per turn
  * - Win Conditions:
- *   1. Tigers win by capturing 5 goats (GOATS_TO_CAPTURE_FOR_WIN = 5)
+ *   1. Tigers win by capturing all 20 goats (or blocking all goats)
  *   2. Goats win by trapping all 4 tigers so none can move
  *   3. Special "Paani Ghara" (ପାଣି ଘର) Win: All 20 goats placed and tigers trapped with 0 captures!
  */
@@ -16,6 +16,7 @@ export type PieceType = 'TIGER' | 'GOAT';
 export type PlayerSide = 'TIGER' | 'GOAT';
 export type BoardPoint = PieceType | null;
 export type BaghaBoard = BoardPoint[];
+export type InitialGoatsOption = 4 | 6 | 8;
 
 export type GamePhase =
   | 'TIGER_PLACEMENT'
@@ -78,11 +79,13 @@ export interface BaghaCoreState {
   currentTurn: PlayerSide;
   phase: GamePhase;
   tigersToPlace: number;
+  initialGoatsBatch: InitialGoatsOption;
   goatsToPlaceInitially: number;
   goatsPlacedTotal: number;
   goatsOnBoard: number;
   goatsCaptured: number;
   selectedPieceIndex: number | null;
+  chainCaptureTigerIndex?: number | null;
   status: GameStatus;
   winInfo: WinInfo | null;
 }
@@ -90,7 +93,7 @@ export interface BaghaCoreState {
 export const NUM_POINTS = 25;
 export const TOTAL_TIGERS = 4;
 export const TOTAL_GOATS = 20;
-export const INITIAL_GOATS_BATCH = 4;
+export const INITIAL_GOATS_BATCH: InitialGoatsOption = 4;
 export const GOATS_TO_CAPTURE_FOR_WIN = 20;
 
 /**
@@ -204,19 +207,30 @@ export function isValidRoomCode(code: string): boolean {
 }
 
 /**
+ * Normalize initial goats option (4, 6, or 8)
+ */
+export function normalizeInitialGoatsOption(val?: number): InitialGoatsOption {
+  if (val === 6 || val === 8) return val;
+  return 4;
+}
+
+/**
  * Create a fresh initial Bagha Chheli board state
  */
-export function createInitialCoreState(): BaghaCoreState {
+export function createInitialCoreState(initialGoatsOption: number = INITIAL_GOATS_BATCH): BaghaCoreState {
+  const batch = normalizeInitialGoatsOption(initialGoatsOption);
   return {
     board: Array(NUM_POINTS).fill(null),
     currentTurn: 'TIGER',
     phase: 'TIGER_PLACEMENT',
     tigersToPlace: TOTAL_TIGERS,
-    goatsToPlaceInitially: INITIAL_GOATS_BATCH,
+    initialGoatsBatch: batch,
+    goatsToPlaceInitially: batch,
     goatsPlacedTotal: 0,
     goatsOnBoard: 0,
     goatsCaptured: 0,
     selectedPieceIndex: null,
+    chainCaptureTigerIndex: null,
     status: 'playing',
     winInfo: null,
   };
@@ -264,6 +278,31 @@ export function isTigerCapture(
 }
 
 /**
+ * Returns all valid jump-capture moves for a specific Tiger at `tigerIndex`
+ */
+export function getCaptureMovesForTiger(
+  board: BaghaBoard,
+  tigerIndex: number
+): ValidMoveOption[] {
+  if (tigerIndex < 0 || tigerIndex >= NUM_POINTS || board[tigerIndex] !== 'TIGER') {
+    return [];
+  }
+  const captures: ValidMoveOption[] = [];
+  for (let dest = 0; dest < NUM_POINTS; dest++) {
+    const cap = isTigerCapture(board, tigerIndex, dest);
+    if (cap.isCapture && cap.middleIndex !== null) {
+      captures.push({
+        from: tigerIndex,
+        to: dest,
+        isCapture: true,
+        capturedIndex: cap.middleIndex,
+      });
+    }
+  }
+  return captures;
+}
+
+/**
  * Check if a tiger at `tigerIndex` has at least one legal move or capture
  */
 export function canTigerMove(board: BaghaBoard, tigerIndex: number): boolean {
@@ -294,11 +333,18 @@ export function getTrappedTigerIndices(board: BaghaBoard): number[] {
 export function getValidMovesForPiece(
   board: BaghaBoard,
   fromIndex: number,
-  phase: GamePhase
+  phase: GamePhase,
+  chainCaptureTigerIndex: number | null = null
 ): ValidMoveOption[] {
   if (fromIndex < 0 || fromIndex >= NUM_POINTS) return [];
   const piece = board[fromIndex];
   if (!piece) return [];
+
+  // If a Tiger is mid-chain capture, only that Tiger's additional jump captures are valid
+  if (chainCaptureTigerIndex !== null && chainCaptureTigerIndex !== undefined) {
+    if (fromIndex !== chainCaptureTigerIndex || piece !== 'TIGER') return [];
+    return getCaptureMovesForTiger(board, fromIndex);
+  }
 
   if (piece === 'TIGER' && (phase === 'MAIN_PLAY' || phase === 'GOAT_MOVEMENT')) {
     const moves: ValidMoveOption[] = [];
@@ -314,17 +360,7 @@ export function getValidMovesForPiece(
       }
     }
     // Jump captures
-    for (let dest = 0; dest < NUM_POINTS; dest++) {
-      const cap = isTigerCapture(board, fromIndex, dest);
-      if (cap.isCapture && cap.middleIndex !== null) {
-        moves.push({
-          from: fromIndex,
-          to: dest,
-          isCapture: true,
-          capturedIndex: cap.middleIndex,
-        });
-      }
-    }
+    moves.push(...getCaptureMovesForTiger(board, fromIndex));
     return moves;
   }
 
@@ -351,6 +387,15 @@ export function getValidMovesForPiece(
  */
 export function getAllLegalActions(state: BaghaCoreState): ValidMoveOption[] {
   if (state.status !== 'playing') return [];
+
+  // If a Tiger is in a multi-jump chain capture, only its capture jumps are returned
+  if (
+    state.currentTurn === 'TIGER' &&
+    state.chainCaptureTigerIndex !== null &&
+    state.chainCaptureTigerIndex !== undefined
+  ) {
+    return getCaptureMovesForTiger(state.board, state.chainCaptureTigerIndex);
+  }
 
   if (
     state.phase === 'TIGER_PLACEMENT' ||
@@ -418,7 +463,7 @@ export function evaluateWinState(
       };
     }
 
-    // Also check if it's GOAT_MOVEMENT and no goat can move at all (rare edge case: Tigers win by blocking all goats)
+    // Also check if it's GOAT_MOVEMENT and no goat can move at all (Tigers win by blocking all goats)
     if (phase === 'GOAT_MOVEMENT') {
       const goatIndices = board
         .map((p, i) => (p === 'GOAT' ? i : -1))
@@ -456,7 +501,9 @@ export interface ActionApplicationResult {
 
 /**
  * Apply a player action (either a placement at `to` with `from = null`, or a move from `from` to `to`).
- * Returns null if the action is illegal.
+ * Supports multi-jump chain captures for Tigers: if a Tiger captures a Goat and lands on `to` where
+ * another capture jump is immediately available with that same Tiger, `currentTurn` stays `'TIGER'`
+ * and `chainCaptureTigerIndex` is set to `to`. Passing `from === -1 && to === -1` ends a chain capture early.
  */
 export function applyPlayerAction(
   state: BaghaCoreState,
@@ -466,6 +513,28 @@ export function applyPlayerAction(
 ): ActionApplicationResult | null {
   if (state.status !== 'playing') return null;
   if (state.currentTurn !== actor) return null;
+
+  const initialBatch = normalizeInitialGoatsOption(state.initialGoatsBatch);
+
+  // Allow Tiger player to voluntarily end an active multi-jump chain capture
+  if (
+    actor === 'TIGER' &&
+    from === -1 &&
+    to === -1 &&
+    state.chainCaptureTigerIndex !== null &&
+    state.chainCaptureTigerIndex !== undefined
+  ) {
+    return {
+      nextState: {
+        ...state,
+        currentTurn: 'GOAT',
+        selectedPieceIndex: null,
+        chainCaptureTigerIndex: null,
+      },
+      actionPerformed: null,
+    };
+  }
+
   if (to < 0 || to >= NUM_POINTS) return null;
 
   const nextBoard = [...state.board];
@@ -476,6 +545,7 @@ export function applyPlayerAction(
   let nextGoatsPlacedTotal = state.goatsPlacedTotal;
   let nextGoatsOnBoard = state.goatsOnBoard;
   let nextGoatsCaptured = state.goatsCaptured;
+  let nextChainCaptureTigerIndex: number | null = null;
 
   let actionType: 'place' | 'move' | 'capture' = 'place';
   let capturedIndex: number | null = null;
@@ -503,11 +573,13 @@ export function applyPlayerAction(
         currentTurn: nextTurn,
         phase: nextPhase,
         tigersToPlace: nextTigersToPlace,
+        initialGoatsBatch: initialBatch,
         goatsToPlaceInitially: nextGoatsToPlaceInitially,
         goatsPlacedTotal: nextGoatsPlacedTotal,
         goatsOnBoard: nextGoatsOnBoard,
         goatsCaptured: nextGoatsCaptured,
         selectedPieceIndex: null,
+        chainCaptureTigerIndex: null,
         status: evalRes.status,
         winInfo: evalRes.winInfo,
       },
@@ -522,7 +594,7 @@ export function applyPlayerAction(
     };
   }
 
-  // 2. GOAT INITIAL PLACEMENT PHASE (First 4 Goats placed consecutively)
+  // 2. GOAT INITIAL PLACEMENT PHASE (First 4, 6, or 8 Goats placed consecutively)
   if (state.phase === 'GOAT_INITIAL_PLACEMENT') {
     if (actor !== 'GOAT' || from !== null || nextBoard[to] !== null) return null;
     nextBoard[to] = 'GOAT';
@@ -531,7 +603,7 @@ export function applyPlayerAction(
     nextGoatsToPlaceInitially -= 1;
 
     if (nextGoatsToPlaceInitially === 0) {
-      nextPhase = 'MAIN_PLAY';
+      nextPhase = nextGoatsPlacedTotal >= TOTAL_GOATS ? 'GOAT_MOVEMENT' : 'MAIN_PLAY';
       nextTurn = 'TIGER';
     }
 
@@ -550,11 +622,13 @@ export function applyPlayerAction(
         currentTurn: nextTurn,
         phase: nextPhase,
         tigersToPlace: nextTigersToPlace,
+        initialGoatsBatch: initialBatch,
         goatsToPlaceInitially: nextGoatsToPlaceInitially,
         goatsPlacedTotal: nextGoatsPlacedTotal,
         goatsOnBoard: nextGoatsOnBoard,
         goatsCaptured: nextGoatsCaptured,
         selectedPieceIndex: null,
+        chainCaptureTigerIndex: null,
         status: evalRes.status,
         winInfo: evalRes.winInfo,
       },
@@ -569,7 +643,7 @@ export function applyPlayerAction(
     };
   }
 
-  // 3. MAIN PLAY — GOAT PLACEMENT (Goats 5..20 placed 1 per turn)
+  // 3. MAIN PLAY — GOAT PLACEMENT (Remaining Goats placed 1 per turn)
   if (state.phase === 'MAIN_PLAY' && actor === 'GOAT') {
     if (from !== null || nextBoard[to] !== null) return null;
     nextBoard[to] = 'GOAT';
@@ -595,11 +669,13 @@ export function applyPlayerAction(
         currentTurn: nextTurn,
         phase: nextPhase,
         tigersToPlace: nextTigersToPlace,
+        initialGoatsBatch: initialBatch,
         goatsToPlaceInitially: nextGoatsToPlaceInitially,
         goatsPlacedTotal: nextGoatsPlacedTotal,
         goatsOnBoard: nextGoatsOnBoard,
         goatsCaptured: nextGoatsCaptured,
         selectedPieceIndex: null,
+        chainCaptureTigerIndex: null,
         status: evalRes.status,
         winInfo: evalRes.winInfo,
       },
@@ -619,6 +695,11 @@ export function applyPlayerAction(
   if (nextBoard[from] !== actor || nextBoard[to] !== null) return null;
 
   if (actor === 'TIGER') {
+    const activeChainTiger = state.chainCaptureTigerIndex ?? null;
+    if (activeChainTiger !== null && from !== activeChainTiger) {
+      return null;
+    }
+
     const cap = isTigerCapture(nextBoard, from, to);
     if (cap.isCapture && cap.middleIndex !== null) {
       nextBoard[to] = 'TIGER';
@@ -628,14 +709,25 @@ export function applyPlayerAction(
       nextGoatsOnBoard -= 1;
       actionType = 'capture';
       capturedIndex = cap.middleIndex;
-    } else if (isAdjacent(from, to)) {
+
+      // Check if this same Tiger at `to` has another jump capture available (multi-capture chain)
+      const followUpCaptures = getCaptureMovesForTiger(nextBoard, to);
+      if (followUpCaptures.length > 0 && nextGoatsCaptured < GOATS_TO_CAPTURE_FOR_WIN) {
+        nextTurn = 'TIGER';
+        nextChainCaptureTigerIndex = to;
+      } else {
+        nextTurn = 'GOAT';
+        nextChainCaptureTigerIndex = null;
+      }
+    } else if (activeChainTiger === null && isAdjacent(from, to)) {
       nextBoard[to] = 'TIGER';
       nextBoard[from] = null;
       actionType = 'move';
+      nextTurn = 'GOAT';
+      nextChainCaptureTigerIndex = null;
     } else {
       return null;
     }
-    nextTurn = 'GOAT';
   } else {
     // Actor is GOAT in GOAT_MOVEMENT
     if (state.phase !== 'GOAT_MOVEMENT') return null;
@@ -648,7 +740,7 @@ export function applyPlayerAction(
 
   const moveLabel =
     actionType === 'capture'
-      ? `#${from + 1}×#${ (capturedIndex ?? 0) + 1 }→#${to + 1}`
+      ? `#${from + 1}×#${(capturedIndex ?? 0) + 1}→#${to + 1}`
       : `#${from + 1}→#${to + 1}`;
 
   const evalRes = evaluateWinState(
@@ -659,17 +751,23 @@ export function applyPlayerAction(
     moveLabel
   );
 
+  if (evalRes.status !== 'playing') {
+    nextChainCaptureTigerIndex = null;
+  }
+
   return {
     nextState: {
       board: nextBoard,
       currentTurn: nextTurn,
       phase: nextPhase,
       tigersToPlace: nextTigersToPlace,
+      initialGoatsBatch: initialBatch,
       goatsToPlaceInitially: nextGoatsToPlaceInitially,
       goatsPlacedTotal: nextGoatsPlacedTotal,
       goatsOnBoard: nextGoatsOnBoard,
       goatsCaptured: nextGoatsCaptured,
-      selectedPieceIndex: null,
+      selectedPieceIndex: nextChainCaptureTigerIndex,
+      chainCaptureTigerIndex: nextChainCaptureTigerIndex,
       status: evalRes.status,
       winInfo: evalRes.winInfo,
     },
@@ -703,74 +801,310 @@ export function getThreatenedGoatIndices(board: BaghaBoard): number[] {
 }
 
 /**
- * Smart AI Bot for Bagha Chheli (can play as either TIGER or GOAT)
+ * Static board evaluation from TIGER's perspective (positive = favorable for Tiger, negative = favorable for Goat)
  */
-export function getBestBotAction(state: BaghaCoreState): ValidMoveOption | null {
+function evaluatePositionForTiger(state: BaghaCoreState): number {
+  if (state.status === 'won') {
+    return state.winInfo?.winner === 'TIGER' ? 100000 : -100000;
+  }
+
+  const b = state.board;
+  let tigerMobility = 0;
+  let tigerHubBonus = 0;
+  let trappedCount = 0;
+  let captureOpportunities = 0;
+
+  for (let i = 0; i < NUM_POINTS; i++) {
+    if (b[i] === 'TIGER') {
+      const deg = ADJACENCY_MAP[i].length;
+      if (deg === 8) tigerHubBonus += 8;
+      let movesForThisTiger = 0;
+      for (const n of ADJACENCY_MAP[i]) {
+        if (b[n] === null) movesForThisTiger++;
+      }
+      const caps = getCaptureMovesForTiger(b, i).length;
+      captureOpportunities += caps;
+      movesForThisTiger += caps * 2;
+      tigerMobility += movesForThisTiger;
+      if (movesForThisTiger === 0) {
+        trappedCount++;
+      }
+    }
+  }
+
+  const threatenedGoats = getThreatenedGoatIndices(b).length;
+
+  // Protected goats (on edges/corners or backed by another goat)
+  let solidGoatStructure = 0;
+  for (let i = 0; i < NUM_POINTS; i++) {
+    if (b[i] === 'GOAT') {
+      const isCorner = i === 0 || i === 4 || i === 20 || i === 24;
+      const isEdge = i % 5 === 0 || i % 5 === 4 || Math.floor(i / 5) === 0 || Math.floor(i / 5) === 4;
+      if (isCorner) solidGoatStructure += 5;
+      else if (isEdge) solidGoatStructure += 3;
+      for (const n of ADJACENCY_MAP[i]) {
+        if (b[n] === 'GOAT') solidGoatStructure += 1;
+      }
+    }
+  }
+
+  return (
+    state.goatsCaptured * 420 +
+    captureOpportunities * 190 +
+    threatenedGoats * 135 +
+    tigerMobility * 12 +
+    tigerHubBonus -
+    trappedCount * 240 -
+    solidGoatStructure * 4
+  );
+}
+
+/**
+ * Minimax with Alpha-Beta Pruning for Pro Tactical Lookahead
+ */
+function minimaxAlphaBeta(
+  state: BaghaCoreState,
+  depth: number,
+  alpha: number,
+  beta: number
+): number {
+  if (depth <= 0 || state.status !== 'playing') {
+    return evaluatePositionForTiger(state);
+  }
+
+  const actions = getAllLegalActions(state);
+  if (actions.length === 0) {
+    return evaluatePositionForTiger(state);
+  }
+
+  // Order moves for faster alpha-beta pruning (captures first)
+  actions.sort((a, b) => (b.isCapture ? 1 : 0) - (a.isCapture ? 1 : 0));
+  const candidateActions = actions.slice(0, 12);
+
+  if (state.currentTurn === 'TIGER') {
+    let maxEval = -Infinity;
+    for (const act of candidateActions) {
+      const sim = applyPlayerAction(state, act.from, act.to, 'TIGER');
+      if (!sim) continue;
+      // If chain capture continues, keep searching at same depth
+      const nextDepth =
+        sim.nextState.chainCaptureTigerIndex !== null &&
+        sim.nextState.chainCaptureTigerIndex !== undefined
+          ? depth
+          : depth - 1;
+      const ev = minimaxAlphaBeta(sim.nextState, nextDepth, alpha, beta);
+      if (ev > maxEval) maxEval = ev;
+      if (ev > alpha) alpha = ev;
+      if (beta <= alpha) break;
+    }
+    return maxEval === -Infinity ? evaluatePositionForTiger(state) : maxEval;
+  } else {
+    let minEval = Infinity;
+    for (const act of candidateActions) {
+      const sim = applyPlayerAction(state, act.from, act.to, 'GOAT');
+      if (!sim) continue;
+      const ev = minimaxAlphaBeta(sim.nextState, depth - 1, alpha, beta);
+      if (ev < minEval) minEval = ev;
+      if (ev < beta) beta = ev;
+      if (beta <= alpha) break;
+    }
+    return minEval === Infinity ? evaluatePositionForTiger(state) : minEval;
+  }
+}
+
+/**
+ * Compute anti-repetition penalty for a candidate move using the round's move history
+ */
+function getMoveRepetitionPenalty(
+  actor: PlayerSide,
+  move: ValidMoveOption,
+  recentMoves: ReadonlyArray<MoveRecord>
+): { penalty: number; isDirectReverse: boolean; movesSinceLastCaptureOrPlace: number } {
+  let movesSinceLastCaptureOrPlace = 0;
+  for (let i = recentMoves.length - 1; i >= 0; i--) {
+    if (recentMoves[i].actionType === 'move') {
+      movesSinceLastCaptureOrPlace++;
+    } else {
+      break;
+    }
+  }
+
+  if (move.from === null || move.isCapture) {
+    return { penalty: 0, isDirectReverse: false, movesSinceLastCaptureOrPlace };
+  }
+
+  const myRecentMoves = recentMoves
+    .slice(-14)
+    .filter((m) => m.player === actor && m.actionType === 'move' && m.from !== null);
+
+  if (myRecentMoves.length === 0) {
+    return { penalty: 0, isDirectReverse: false, movesSinceLastCaptureOrPlace };
+  }
+
+  const lastMyMove = myRecentMoves[myRecentMoves.length - 1];
+  const isDirectReverse = lastMyMove.from === move.to && lastMyMove.to === move.from;
+
+  let pairCount = 0;
+  let destVisits = 0;
+  for (const m of myRecentMoves) {
+    if (
+      (m.from === move.from && m.to === move.to) ||
+      (m.from === move.to && m.to === move.from)
+    ) {
+      pairCount++;
+    }
+    if (m.to === move.to) {
+      destVisits++;
+    }
+  }
+
+  const penalty = (isDirectReverse ? 520 : 0) + pairCount * 220 + destVisits * 65;
+  return { penalty, isDirectReverse, movesSinceLastCaptureOrPlace };
+}
+
+/**
+ * Pro-Level Computer (AI) Bot for Bagha Chheli (plays as either TIGER or GOAT).
+ * - Uses randomized strategic opening book placements for both Tigers and Goats so every game is unique.
+ * - Uses 3-ply Alpha-Beta pruning + tactical forks/blocking evaluation.
+ * - Tracks move history (`recentMoves`) to prevent endless back-and-forth repetition.
+ * - If playing as GOAT and a repetitive stalemate loop is detected in movement phase, intentionally
+ *   sacrifices 1 Goat to a Tiger capture to break the endless loop and open up tactical play.
+ */
+export function getBestBotAction(
+  state: BaghaCoreState,
+  recentMoves: ReadonlyArray<MoveRecord> = []
+): ValidMoveOption | null {
   if (state.status !== 'playing') return null;
   const actions = getAllLegalActions(state);
   if (actions.length === 0) return null;
 
-  // 1. TIGER_PLACEMENT: Prefer strategic 8-way hubs (12, 6, 8, 16, 18) and corners (0, 4, 20, 24)
+  // 1. TIGER_PLACEMENT: Randomized Pro Opening Formations (never places Tigers in the exact same order/spots every time)
   if (state.phase === 'TIGER_PLACEMENT') {
-    const preferredOrder = [6, 8, 16, 18, 12, 0, 4, 20, 24, 2, 10, 14, 22];
-    for (const pt of preferredOrder) {
-      const found = actions.find((a) => a.to === pt);
-      if (found) return found;
+    const primaryStrategicPool = [6, 8, 12, 16, 18, 0, 4, 20, 24, 2, 10, 14, 22];
+    const availableStrategic = actions.filter((a) => primaryStrategicPool.includes(a.to));
+    if (availableStrategic.length > 0) {
+      // Weight 8-way power hubs slightly higher while keeping genuine randomness across all 13 8-way junctions
+      const weighted = availableStrategic.map((act) => {
+        const isInnerHub = act.to === 6 || act.to === 8 || act.to === 12 || act.to === 16 || act.to === 18;
+        const isCorner = act.to === 0 || act.to === 4 || act.to === 20 || act.to === 24;
+        const score = (isInnerHub ? 22 : isCorner ? 18 : 14) + Math.random() * 20;
+        return { act, score };
+      });
+      weighted.sort((a, b) => b.score - a.score);
+      return weighted[0].act;
     }
-    return actions[0];
+    return actions[Math.floor(Math.random() * actions.length)];
   }
 
-  // 2. Bot playing as TIGER in MAIN_PLAY or GOAT_MOVEMENT
+  // 2. GOAT_INITIAL_PLACEMENT: Randomized Safe Strategic Placements (edges, corners & tiger-blocking squares)
+  if (state.phase === 'GOAT_INITIAL_PLACEMENT') {
+    const scoredPlacements: Array<{ act: ValidMoveOption; score: number }> = [];
+    for (const act of actions) {
+      const sim = applyPlayerAction(state, null, act.to, 'GOAT');
+      if (!sim) continue;
+      const b = sim.nextState.board;
+      const threatened = getThreatenedGoatIndices(b).length;
+      const trapped = getTrappedTigerIndices(b).length;
+      const isCorner = act.to === 0 || act.to === 4 || act.to === 20 || act.to === 24;
+      const isEdge =
+        act.to % 5 === 0 || act.to % 5 === 4 || Math.floor(act.to / 5) === 0 || Math.floor(act.to / 5) === 4;
+
+      // Strong penalty if placing here exposes a goat to immediate capture once Phase 2 starts
+      const safetyScore = threatened === 0 ? 200 : -threatened * 250;
+      const edgeScore = (isCorner ? 30 : 0) + (isEdge ? 22 : 0) + trapped * 45;
+      // Add randomized jitter (0..28) so Goat openings vary naturally across matches
+      const randomJitter = Math.random() * 28;
+      scoredPlacements.push({
+        act,
+        score: safetyScore + edgeScore + randomJitter,
+      });
+    }
+    scoredPlacements.sort((a, b) => b.score - a.score);
+    return scoredPlacements[0]?.act || actions[0];
+  }
+
+  // 3. Bot playing as TIGER in MAIN_PLAY or GOAT_MOVEMENT (including multi-jump chain captures)
   if (state.currentTurn === 'TIGER') {
-    // Immediate capture is highest priority
     const captures = actions.filter((a) => a.isCapture);
     if (captures.length > 0) {
-      // Pick capture that leaves tigers with highest mobility or creates a follow-up capture threat
       let bestCap = captures[0];
-      let bestScore = -9999;
+      let bestCapScore = -Infinity;
       for (const cap of captures) {
         const sim = applyPlayerAction(state, cap.from, cap.to, 'TIGER');
         if (!sim) continue;
         if (sim.nextState.status === 'won') return cap;
-        const nextThreatCount = getThreatenedGoatIndices(sim.nextState.board).length;
-        const trappedCount = getTrappedTigerIndices(sim.nextState.board).length;
-        const score = nextThreatCount * 20 - trappedCount * 35 + ADJACENCY_MAP[cap.to].length * 2;
-        if (score > bestScore) {
-          bestScore = score;
+        // Prefer captures that trigger another immediate chain capture!
+        const chainBonus =
+          sim.nextState.chainCaptureTigerIndex !== null &&
+          sim.nextState.chainCaptureTigerIndex !== undefined
+            ? 900
+            : 0;
+        const lookahead = minimaxAlphaBeta(sim.nextState, 2, -Infinity, Infinity);
+        const totalScore = chainBonus + lookahead + Math.random() * 6;
+        if (totalScore > bestCapScore) {
+          bestCapScore = totalScore;
           bestCap = cap;
         }
       }
       return bestCap;
     }
 
-    // Otherwise evaluate each normal tiger move
-    let bestMove = actions[0];
-    let bestScore = -9999;
+    // Evaluate non-capture Tiger moves with 2-ply lookahead + anti-repetition penalty
+    let bestTigerMove = actions[0];
+    let bestTigerScore = -Infinity;
+
     for (const move of actions) {
       const sim = applyPlayerAction(state, move.from, move.to, 'TIGER');
       if (!sim) continue;
-      const b = sim.nextState.board;
-      const threats = getThreatenedGoatIndices(b).length;
-      const trapped = getTrappedTigerIndices(b).length;
-      const mobility = b.reduce((acc, p, idx) => {
-        if (p !== 'TIGER') return acc;
-        return acc + getValidMovesForPiece(b, idx, 'MAIN_PLAY').length;
-      }, 0);
-      const centerBonus = ADJACENCY_MAP[move.to].length * 1.5;
-      const score = threats * 25 + mobility * 4 - trapped * 40 + centerBonus;
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = move;
+      if (sim.nextState.status === 'won') return move;
+
+      const rep = getMoveRepetitionPenalty('TIGER', move, recentMoves);
+      const lookahead = minimaxAlphaBeta(sim.nextState, 2, -Infinity, Infinity);
+      const score = lookahead - rep.penalty + Math.random() * 8;
+
+      if (score > bestTigerScore) {
+        bestTigerScore = score;
+        bestTigerMove = move;
       }
     }
-    return bestMove;
+    return bestTigerMove;
   }
 
-  // 3. Bot playing as GOAT (GOAT_INITIAL_PLACEMENT, MAIN_PLAY placement, or GOAT_MOVEMENT)
-  let bestGoatAction = actions[0];
-  let bestGoatScore = -99999;
-
+  // 4. Bot playing as GOAT in MAIN_PLAY (placement) or GOAT_MOVEMENT (movement)
   const currentThreatened = getThreatenedGoatIndices(state.board).length;
+  const sampleRep = getMoveRepetitionPenalty('GOAT', actions[0], recentMoves);
+
+  // Deadlock / Endless-Game Breaker for GOAT AI:
+  // If in GOAT_MOVEMENT and 10+ consecutive moves have occurred without any capture or progress,
+  // or if the game is oscillating repetitively, Goat AI intentionally offers 1 Goat for capture
+  // so the game progresses instead of looping forever!
+  if (
+    state.phase === 'GOAT_MOVEMENT' &&
+    sampleRep.movesSinceLastCaptureOrPlace >= 10 &&
+    currentThreatened === 0
+  ) {
+    const sacrificeCandidates: Array<{ act: ValidMoveOption; score: number }> = [];
+    for (const act of actions) {
+      const sim = applyPlayerAction(state, act.from, act.to, 'GOAT');
+      if (!sim) continue;
+      const b = sim.nextState.board;
+      const newThreatened = getThreatenedGoatIndices(b).length;
+      if (newThreatened === 1) {
+        const trapped = getTrappedTigerIndices(b).length;
+        sacrificeCandidates.push({
+          act,
+          score: trapped * 80 - evaluatePositionForTiger(sim.nextState) + Math.random() * 15,
+        });
+      }
+    }
+    if (sacrificeCandidates.length > 0) {
+      sacrificeCandidates.sort((a, b) => b.score - a.score);
+      return sacrificeCandidates[0].act;
+    }
+  }
+
+  let bestGoatAction = actions[0];
+  let bestGoatScore = -Infinity;
 
   for (const act of actions) {
     const sim = applyPlayerAction(state, act.from, act.to, 'GOAT');
@@ -778,32 +1112,35 @@ export function getBestBotAction(state: BaghaCoreState): ValidMoveOption | null 
     if (sim.nextState.status === 'won' && sim.nextState.winInfo?.winner === 'GOAT') {
       return act; // Immediate win!
     }
+
     const b = sim.nextState.board;
     const newThreatened = getThreatenedGoatIndices(b).length;
     const trappedTigers = getTrappedTigerIndices(b).length;
-    const totalTigerMoves = b.reduce((acc, p, idx) => {
-      if (p !== 'TIGER') return acc;
-      return acc + getValidMovesForPiece(b, idx, 'MAIN_PLAY').length;
-    }, 0);
+    const rep = getMoveRepetitionPenalty('GOAT', act, recentMoves);
 
-    // Avoid giving away a capture!
-    const capturePenalty = newThreatened * 120;
-    const savedGoatBonus = currentThreatened > newThreatened ? 80 : 0;
-    // Edge and corner points are harder to jump over
+    // Rescue bonus if a Goat was threatened and this action saves it
+    const rescueBonus =
+      currentThreatened > newThreatened ? (currentThreatened - newThreatened) * 480 : 0;
+    const dangerPenalty = newThreatened * 520;
+
     const isCorner = act.to === 0 || act.to === 4 || act.to === 20 || act.to === 24;
     const isEdge =
       act.to % 5 === 0 || act.to % 5 === 4 || Math.floor(act.to / 5) === 0 || Math.floor(act.to / 5) === 4;
-    const safetyBonus = (isCorner ? 14 : 0) + (isEdge ? 8 : 0);
+    const structureBonus = (isCorner ? 20 : 0) + (isEdge ? 12 : 0) + trappedTigers * 140;
 
-    const score =
-      savedGoatBonus -
-      capturePenalty +
-      trappedTigers * 65 -
-      totalTigerMoves * 6 +
-      safetyBonus;
+    // 2-ply lookahead (negated since minimax evaluates from Tiger's perspective)
+    const lookaheadForGoat = -minimaxAlphaBeta(sim.nextState, 1, -Infinity, Infinity);
 
-    if (score > bestGoatScore) {
-      bestGoatScore = score;
+    const totalScore =
+      lookaheadForGoat +
+      rescueBonus -
+      dangerPenalty +
+      structureBonus -
+      rep.penalty +
+      Math.random() * 12;
+
+    if (totalScore > bestGoatScore) {
+      bestGoatScore = totalScore;
       bestGoatAction = act;
     }
   }

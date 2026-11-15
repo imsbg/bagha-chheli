@@ -2,6 +2,7 @@ import Peer, { DataConnection } from 'peerjs';
 import {
   BaghaCoreState,
   PlayerSide,
+  InitialGoatsOption,
   MoveRecord,
   RoundRecord,
   createInitialCoreState,
@@ -124,7 +125,8 @@ export class WebRTCNetworkRoom {
     callbacks: RoomCallbacks,
     initialGuestOverride?: PlayerInfo | null,
     smartHintsEnabled: boolean = false,
-    hostSide: PlayerSide = 'TIGER'
+    hostSide: PlayerSide = 'TIGER',
+    initialGoatsBatch: InitialGoatsOption = 4
   ) {
     this.roomCode = roomCode.toUpperCase();
     this.role = role;
@@ -133,7 +135,7 @@ export class WebRTCNetworkRoom {
     this.callbacks = callbacks;
 
     const now = Date.now();
-    const core = createInitialCoreState();
+    const core = createInitialCoreState(initialGoatsBatch);
     this.state = {
       ...core,
       roomCode: this.roomCode,
@@ -668,7 +670,16 @@ export class WebRTCNetworkRoom {
     if (!this.state.players.guest?.connected) return false;
 
     const res = applyPlayerAction(this.state, from, to, player);
-    if (!res || !res.actionPerformed) return false;
+    if (!res) return false;
+
+    // Handle voluntary end of multi-jump chain capture (from = -1, to = -1)
+    if (!res.actionPerformed) {
+      this.state.currentTurn = res.nextState.currentTurn;
+      this.state.selectedPieceIndex = null;
+      this.state.chainCaptureTigerIndex = null;
+      this.broadcastState();
+      return true;
+    }
 
     const now = Date.now();
     const elapsedSeconds = Math.max(0, Math.floor((now - this.state.roundStartedAt) / 1000));
@@ -699,11 +710,13 @@ export class WebRTCNetworkRoom {
     this.state.currentTurn = res.nextState.currentTurn;
     this.state.phase = res.nextState.phase;
     this.state.tigersToPlace = res.nextState.tigersToPlace;
+    this.state.initialGoatsBatch = res.nextState.initialGoatsBatch;
     this.state.goatsToPlaceInitially = res.nextState.goatsToPlaceInitially;
     this.state.goatsPlacedTotal = res.nextState.goatsPlacedTotal;
     this.state.goatsOnBoard = res.nextState.goatsOnBoard;
     this.state.goatsCaptured = res.nextState.goatsCaptured;
-    this.state.selectedPieceIndex = null;
+    this.state.selectedPieceIndex = res.nextState.selectedPieceIndex;
+    this.state.chainCaptureTigerIndex = res.nextState.chainCaptureTigerIndex ?? null;
     this.state.status = res.nextState.status;
     this.state.winInfo = res.nextState.winInfo;
 
@@ -787,17 +800,19 @@ export class WebRTCNetworkRoom {
   }
 
   private startNewRound() {
-    const core = createInitialCoreState();
+    const core = createInitialCoreState(this.state.initialGoatsBatch || 4);
     const now = Date.now();
     this.state.board = core.board;
     this.state.currentTurn = core.currentTurn;
     this.state.phase = core.phase;
     this.state.tigersToPlace = core.tigersToPlace;
+    this.state.initialGoatsBatch = core.initialGoatsBatch;
     this.state.goatsToPlaceInitially = core.goatsToPlaceInitially;
     this.state.goatsPlacedTotal = core.goatsPlacedTotal;
     this.state.goatsOnBoard = core.goatsOnBoard;
     this.state.goatsCaptured = core.goatsCaptured;
     this.state.selectedPieceIndex = null;
+    this.state.chainCaptureTigerIndex = null;
     this.state.status = 'playing';
     this.state.winInfo = null;
     this.state.round += 1;

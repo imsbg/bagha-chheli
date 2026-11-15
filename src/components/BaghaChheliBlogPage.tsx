@@ -270,8 +270,10 @@ export const BaghaChheliBlogPage: React.FC<BaghaChheliBlogPageProps> = ({
                       fill={isDark ? '#94A3B8' : '#78350F'}
                     />
                   ))}
-                  {/* Capture Landing Target Rings at (0,100) and (100,100) */}
+                  {/* Capture Landing Target Rings at (0,50), (100,50), (0,100), and (100,100) */}
                   {[
+                    { x: 0, y: 50 },
+                    { x: 100, y: 50 },
                     { x: 0, y: 100 },
                     { x: 100, y: 100 },
                   ].map((pt, i) => (
