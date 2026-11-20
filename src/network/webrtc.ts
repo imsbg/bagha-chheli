@@ -8,6 +8,7 @@ import {
   createInitialCoreState,
   applyPlayerAction,
   getTrappedTigerIndices,
+  swapTwoPlayerSides,
 } from '../game/rules';
 
 export type NetworkRole = 'host' | 'guest' | 'spectator';
@@ -802,6 +803,19 @@ export class WebRTCNetworkRoom {
   private startNewRound() {
     const core = createInitialCoreState(this.state.initialGoatsBatch || 4);
     const now = Date.now();
+    const { hostSide, guestSide } = swapTwoPlayerSides(this.state.players.host.side);
+    this.state.players = {
+      host: {
+        ...this.state.players.host,
+        side: hostSide,
+      },
+      guest: this.state.players.guest
+        ? {
+            ...this.state.players.guest,
+            side: guestSide,
+          }
+        : null,
+    };
     this.state.board = core.board;
     this.state.currentTurn = core.currentTurn;
     this.state.phase = core.phase;

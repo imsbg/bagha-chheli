@@ -1354,7 +1354,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 </div>
 
                 <p
-                  className={`text-xs sm:text-sm font-semibold mb-3 ${
+                  className={`text-xs sm:text-sm font-semibold mb-2 ${
                     isDark ? 'text-slate-300' : 'text-slate-600'
                   }`}
                 >
@@ -1364,6 +1364,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     ? t.winByCapturesDesc
                     : t.winByTrappedDesc}
                 </p>
+
+                <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[11px] font-bold">
+                  <RotateCcw className="w-3 h-3 shrink-0" />
+                  <span>{t.nextRoundSwapNotice}</span>
+                </div>
 
                 {!isSpectator ? (
                   <>
@@ -1385,6 +1390,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                           type="button"
                           onClick={onRequestRematch}
                           disabled={hasRequestedRematch}
+                          data-testid="play-again-btn"
                           className={`h-11 w-full sm:w-auto px-5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap ${
                             hasRequestedRematch
                               ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 cursor-default'

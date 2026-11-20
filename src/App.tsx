@@ -542,6 +542,8 @@ export default function App() {
     gameState?.phase,
     gameState?.chainCaptureTigerIndex,
     gameState?.currentRoundMoves.length,
+    gameState?.players.guest?.side,
+    gameState?.round,
   ]);
 
   const handleBoardAction = (

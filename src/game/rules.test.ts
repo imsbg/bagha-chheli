@@ -11,6 +11,8 @@ import {
   NUM_POINTS,
   GOATS_TO_CAPTURE_FOR_WIN,
   generateRandomPlayerId,
+  swapPlayerSide,
+  swapTwoPlayerSides,
 } from './rules';
 
 test('generateRandomPlayerId matches sb-1a0a to sb-9z9z format', () => {
@@ -220,4 +222,16 @@ test('Multi-jump chain capture allows a Tiger to capture multiple Goats in a sin
   assert.equal(state.chainCaptureTigerIndex, null);
   assert.equal(state.currentTurn, 'GOAT');
 });
+
+test('swapPlayerSide and swapTwoPlayerSides alternate chaal between Tiger and Goat after a win/loss', () => {
+  assert.equal(swapPlayerSide('TIGER'), 'GOAT');
+  assert.equal(swapPlayerSide('GOAT'), 'TIGER');
+
+  const round2 = swapTwoPlayerSides('TIGER');
+  assert.deepEqual(round2, { hostSide: 'GOAT', guestSide: 'TIGER' });
+
+  const round3 = swapTwoPlayerSides(round2.hostSide);
+  assert.deepEqual(round3, { hostSide: 'TIGER', guestSide: 'GOAT' });
+});
+
 

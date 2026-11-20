@@ -237,6 +237,27 @@ export function createInitialCoreState(initialGoatsOption: number = INITIAL_GOAT
 }
 
 /**
+ * Swap a single player's side (TIGER <-> GOAT) for alternating chaal after a win/loss
+ */
+export function swapPlayerSide(side: PlayerSide): PlayerSide {
+  return side === 'TIGER' ? 'GOAT' : 'TIGER';
+}
+
+/**
+ * Compute swapped host & guest sides for the next round
+ */
+export function swapTwoPlayerSides(currentHostSide: PlayerSide): {
+  hostSide: PlayerSide;
+  guestSide: PlayerSide;
+} {
+  const hostSide = swapPlayerSide(currentHostSide);
+  return {
+    hostSide,
+    guestSide: swapPlayerSide(hostSide),
+  };
+}
+
+/**
  * Check if two board points are directly connected by a line
  */
 export function isAdjacent(idx1: number, idx2: number): boolean {
