@@ -54,10 +54,10 @@ export const BaghaChheliBlogPage: React.FC<BaghaChheliBlogPageProps> = ({
       {/* Top Sticky Blog Header */}
       <header className="sticky top-0 z-50 px-3 sm:px-6 pt-2 pb-1">
         <div
-          className={`max-w-5xl mx-auto rounded-2xl px-4 py-2 flex items-center justify-between border backdrop-blur-2xl ${
+          className={`max-w-5xl mx-auto rounded-2xl px-4 py-2 flex items-center justify-between border md:backdrop-blur-2xl ${
             isDark
-              ? 'bg-slate-900/85 border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.45)]'
-              : 'bg-white/90 border-slate-200/90 shadow-[0_8px_32px_rgba(15,23,42,0.08)]'
+              ? 'bg-slate-900/95 md:bg-slate-900/85 border-white/15 shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.45)]'
+              : 'bg-white/95 md:bg-white/90 border-slate-200/90 shadow-md md:shadow-[0_8px_32px_rgba(15,23,42,0.08)]'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">

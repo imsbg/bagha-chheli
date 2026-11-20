@@ -23,3 +23,45 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
 }
+
+@keyframes piecePlacePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-piece-place {
+  animation: piecePlacePop 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes pieceJumpArc {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-piece-jump {
+  animation: pieceJumpArc 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button,
+a,
+[role="gridcell"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

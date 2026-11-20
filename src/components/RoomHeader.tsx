@@ -85,12 +85,12 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
   };
 
   return (
-    <header className="w-full sticky top-0 z-50 px-2.5 sm:px-4 pt-2 pb-1.5 backdrop-blur-md">
+    <header className="w-full sticky top-0 z-50 px-2.5 sm:px-4 pt-2 pb-1.5 md:backdrop-blur-md">
       <div
-        className={`max-w-6xl mx-auto rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2 transition-all duration-300 backdrop-blur-2xl border ${
+        className={`max-w-6xl mx-auto rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2 transition-colors duration-300 md:backdrop-blur-2xl border ${
           isDark
-            ? 'bg-slate-900/85 border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)]'
-            : 'bg-white/90 border-slate-200/90 shadow-[0_8px_32px_rgba(15,23,42,0.08),inset_0_1px_2px_rgba(255,255,255,0.9)]'
+            ? 'bg-slate-900/95 md:bg-slate-900/85 border-white/15 shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)]'
+            : 'bg-white/95 md:bg-white/90 border-slate-200/90 shadow-md md:shadow-[0_8px_32px_rgba(15,23,42,0.08),inset_0_1px_2px_rgba(255,255,255,0.9)]'
         }`}
       >
         {/* Brand Logo (Tiger Face SVG) & Title */}
@@ -129,7 +129,7 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
             <>
               {/* Room Code Pill + QR Button */}
               <div
-                className={`h-9 sm:h-10 flex items-center gap-1 border rounded-xl pl-2.5 pr-1 backdrop-blur-md transition-colors shrink-0 ${
+                className={`h-9 sm:h-10 flex items-center gap-1 border rounded-xl pl-2.5 pr-1 md:backdrop-blur-md transition-colors shrink-0 ${
                   isDark
                     ? 'bg-white/5 border-white/15'
                     : 'bg-slate-900/5 border-slate-300/80'
@@ -353,7 +353,7 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label="Open Menu"
-              className={`h-9 w-9 flex items-center justify-center rounded-xl border transition-all backdrop-blur-md ${
+              className={`h-9 w-9 flex items-center justify-center rounded-xl border transition-colors ${
                 isDark
                   ? 'bg-white/5 hover:bg-white/15 text-white border-white/15'
                   : 'bg-slate-900/5 hover:bg-slate-900/10 text-slate-800 border-slate-300/80'
@@ -364,10 +364,10 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
 
             {mobileMenuOpen && (
               <div
-                className={`absolute right-0 mt-2 w-60 rounded-2xl p-2 border shadow-2xl backdrop-blur-2xl z-50 flex flex-col gap-1 ${
+                className={`absolute right-0 mt-2 w-60 rounded-2xl p-2 border shadow-2xl z-50 flex flex-col gap-1 ${
                   isDark
-                    ? 'bg-slate-900/95 border-white/15 text-white'
-                    : 'bg-white/95 border-slate-200 text-slate-800'
+                    ? 'bg-slate-900 border-white/15 text-white'
+                    : 'bg-white border-slate-200 text-slate-800'
                 }`}
               >
                 {/* Home Link to DesiGames Hub */}

@@ -21,16 +21,16 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ theme, lang }) => {
   const isDark = theme === 'dark';
 
   return (
-    <div className="w-full sticky bottom-0 z-40 mt-auto px-2.5 sm:px-4 pb-2 pt-1 backdrop-blur-md">
+    <div className="w-full sticky bottom-0 z-40 mt-auto px-2.5 sm:px-4 pb-2 pt-1 md:backdrop-blur-md">
       <div className="max-w-6xl mx-auto">
         <a
           href={PLAY_STORE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className={`group block rounded-2xl px-3.5 py-2.5 border transition-all duration-300 backdrop-blur-2xl relative overflow-hidden ${
+          className={`group block rounded-2xl px-3.5 py-2.5 border transition-colors duration-300 md:backdrop-blur-2xl relative overflow-hidden ${
             isDark
-              ? 'bg-gradient-to-r from-slate-900/95 via-orange-950/85 to-amber-950/85 border-orange-500/35 hover:border-orange-400/60 shadow-[0_-8px_30px_rgba(0,0,0,0.6)]'
-              : 'bg-gradient-to-r from-orange-50/95 via-amber-50/95 to-white/95 border-orange-300/90 hover:border-orange-400 shadow-[0_-8px_24px_rgba(234,88,12,0.12)]'
+              ? 'bg-slate-900 md:bg-gradient-to-r md:from-slate-900/95 md:via-orange-950/85 md:to-amber-950/85 border-orange-500/35 hover:border-orange-400/60 shadow-lg md:shadow-[0_-8px_30px_rgba(0,0,0,0.6)]'
+              : 'bg-orange-50 md:bg-gradient-to-r md:from-orange-50/95 md:via-amber-50/95 md:to-white/95 border-orange-300/90 hover:border-orange-400 shadow-md md:shadow-[0_-8px_24px_rgba(234,88,12,0.12)]'
           }`}
         >
           <div className="flex items-center justify-between gap-3 relative z-10">

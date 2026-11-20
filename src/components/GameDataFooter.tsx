@@ -112,10 +112,10 @@ export const GameDataFooter: React.FC<GameDataFooterProps> = ({ state, theme, la
   return (
     <footer className="w-full max-w-5xl mx-auto px-2.5 sm:px-4 pb-6 pt-2 z-10">
       <div
-        className={`rounded-3xl p-3.5 sm:p-5 border backdrop-blur-2xl transition-all ${
+        className={`rounded-3xl p-3.5 sm:p-5 border md:backdrop-blur-2xl transition-colors ${
           isDark
-            ? 'bg-slate-900/65 border-white/15 shadow-[0_16px_48px_rgba(0,0,0,0.45)]'
-            : 'bg-white/75 border-white/90 shadow-[0_16px_40px_rgba(15,23,42,0.08)]'
+            ? 'bg-slate-900/95 md:bg-slate-900/65 border-white/15 shadow-lg md:shadow-[0_16px_48px_rgba(0,0,0,0.45)]'
+            : 'bg-white/95 md:bg-white/75 border-slate-200/90 md:border-white/90 shadow-md md:shadow-[0_16px_40px_rgba(15,23,42,0.08)]'
         }`}
       >
         {/* Header & Live Timers Bar */}
@@ -333,7 +333,7 @@ export const GameDataFooter: React.FC<GameDataFooterProps> = ({ state, theme, la
                   return (
                     <div
                       key={r.round}
-                      className={`p-2.5 sm:p-3 rounded-2xl border transition-all ${
+                      className={`p-2.5 sm:p-3 rounded-2xl border transition-colors ${
                         isDark
                           ? 'bg-white/5 border-white/10 text-slate-200'
                           : 'bg-white border-slate-200/90 text-slate-800 shadow-sm'

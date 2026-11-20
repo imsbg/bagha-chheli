@@ -644,8 +644,8 @@ export default function App() {
         isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'
       }`}
     >
-      {/* Ambient Liquid Glass Background Orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {/* Ambient Liquid Glass Background Orbs (Desktop only for crisp 60fps mobile rendering) */}
+      <div className="hidden md:block fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div
           className={`absolute -top-28 -left-28 w-96 h-96 rounded-full blur-3xl transition-opacity duration-500 ${
             isDark ? 'bg-amber-600/20 opacity-90' : 'bg-amber-400/25 opacity-80'
@@ -761,16 +761,16 @@ export default function App() {
       {/* Accidental Back / Leave Room Confirmation Modal */}
       {isLeaveConfirmOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 md:bg-black/70 md:backdrop-blur-md animate-fade-in"
           role="dialog"
           aria-modal="true"
           aria-labelledby="leave-confirm-title"
         >
           <div
-            className={`relative w-full max-w-sm rounded-3xl p-6 border transition-all backdrop-blur-2xl ${
+            className={`relative w-full max-w-sm rounded-3xl p-6 border transition-colors md:backdrop-blur-2xl ${
               isDark
-                ? 'bg-slate-900/95 border-white/20 text-white shadow-[0_24px_64px_rgba(0,0,0,0.85)]'
-                : 'bg-white/95 border-slate-200 text-slate-900 shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
+                ? 'bg-slate-900 md:bg-slate-900/95 border-white/20 text-white shadow-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.85)]'
+                : 'bg-white md:bg-white/95 border-slate-200 text-slate-900 shadow-2xl md:shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
             }`}
           >
             <button

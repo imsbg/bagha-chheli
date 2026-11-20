@@ -169,10 +169,10 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
       <div className="w-full">
         {/* Main Liquid Glass Card */}
         <div
-          className={`rounded-3xl p-4 sm:p-7 transition-all duration-300 backdrop-blur-2xl border ${
+          className={`rounded-3xl p-4 sm:p-7 transition-colors duration-300 md:backdrop-blur-2xl border ${
             isDark
-              ? 'bg-slate-900/65 border-white/15 shadow-[0_24px_64px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.2)]'
-              : 'bg-white/80 border-slate-200/90 shadow-[0_20px_50px_rgba(15,23,42,0.1),inset_0_1px_2px_rgba(255,255,255,0.95)]'
+              ? 'bg-slate-900/95 md:bg-slate-900/65 border-white/15 shadow-xl md:shadow-[0_24px_64px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.2)]'
+              : 'bg-white/95 md:bg-white/80 border-slate-200/90 shadow-lg md:shadow-[0_20px_50px_rgba(15,23,42,0.1),inset_0_1px_2px_rgba(255,255,255,0.95)]'
           }`}
         >
           {/* Balanced Desktop 2-Column Layout / Mobile Stacked */}
@@ -182,7 +182,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
               {/* Hero Badge & Title */}
               <div className="text-center lg:text-left">
                 <div
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-2.5 border backdrop-blur-md whitespace-nowrap ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-2.5 border md:backdrop-blur-md whitespace-nowrap ${
                     isDark
                       ? 'bg-amber-500/15 border-amber-400/30 text-amber-300'
                       : 'bg-amber-500/10 border-amber-500/25 text-amber-700'
@@ -211,7 +211,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
               </div>
 
               {(errorMsg || localError) && (
-                <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-500 text-xs sm:text-sm font-semibold text-center lg:text-left backdrop-blur-md">
+                <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-500 text-xs sm:text-sm font-semibold text-center lg:text-left md:backdrop-blur-md">
                   {errorMsg || localError}
                 </div>
               )}
@@ -237,7 +237,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
                     placeholder={t.enterYourName}
-                    className={`w-full h-11 pl-10 pr-4 rounded-xl border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all backdrop-blur-md ${
+                    className={`w-full h-11 pl-10 pr-4 rounded-xl border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors md:backdrop-blur-md ${
                       isDark
                         ? 'bg-white/5 border-white/15 text-white placeholder-slate-400'
                         : 'bg-white border-slate-300/90 text-slate-900 placeholder-slate-400 shadow-inner'
@@ -248,7 +248,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
 
               {/* Solo Mode vs Computer (AI) Card */}
               <div
-                className={`p-4 sm:p-5 rounded-2xl border transition-all flex-1 flex flex-col justify-between ${
+                className={`p-4 sm:p-5 rounded-2xl border transition-colors flex-1 flex flex-col justify-between ${
                   isDark
                     ? 'bg-emerald-500/10 border-emerald-500/25'
                     : 'bg-emerald-50/80 border-emerald-200/90'
@@ -299,7 +299,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
                   <button
                     onClick={handleSolo}
                     type="button"
-                    className={`w-full h-12 px-4 rounded-xl font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] border backdrop-blur-md whitespace-nowrap ${
+                    className={`w-full h-12 px-4 rounded-xl font-bold flex items-center justify-center gap-2.5 transition-colors active:scale-[0.99] border md:backdrop-blur-md whitespace-nowrap ${
                       isDark
                         ? 'bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-100 border-emerald-400/35 shadow-lg shadow-emerald-500/10'
                         : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20'
@@ -372,7 +372,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
             <div className="lg:col-span-6 flex flex-col justify-between gap-4">
               {/* Game Configuration: 4 Tigers (Compulsory) + Initial Goats (Default 4, or 6 / 8) */}
               <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all ${
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-colors ${
                   isDark
                     ? 'bg-white/[0.04] border-white/15'
                     : 'bg-slate-50/90 border-slate-200/90'
@@ -430,7 +430,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
 
               {/* Create Online Room Box */}
               <div
-                className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                className={`p-4 sm:p-5 rounded-2xl border transition-colors ${
                   isDark
                     ? 'bg-amber-500/10 border-amber-500/25'
                     : 'bg-amber-50/75 border-amber-200/80'
@@ -528,7 +528,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
                       if (localError) setLocalError(null);
                     }}
                     placeholder={t.enterRoomCodePlaceholder}
-                    className={`flex-1 h-11 px-3.5 rounded-xl border font-mono text-sm font-bold uppercase tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:normal-case placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all backdrop-blur-md ${
+                    className={`flex-1 h-11 px-3.5 rounded-xl border font-mono text-sm font-bold uppercase tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:normal-case placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors md:backdrop-blur-md ${
                       isDark
                         ? 'bg-white/5 border-white/15 text-amber-300 placeholder-slate-500'
                         : 'bg-white border-slate-300/90 text-amber-700 placeholder-slate-400 shadow-inner'
@@ -537,7 +537,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
                   <div className="grid grid-cols-2 sm:flex gap-2 shrink-0">
                     <button
                       type="submit"
-                      className={`h-11 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] border backdrop-blur-md whitespace-nowrap ${
+                      className={`h-11 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors active:scale-[0.99] border md:backdrop-blur-md whitespace-nowrap ${
                         isDark
                           ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-400/30 shadow-md'
                           : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900 shadow-md'
@@ -550,7 +550,7 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
                       type="button"
                       onClick={handleSpectate}
                       title={t.watchAsSpectator}
-                      className={`h-11 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] border backdrop-blur-md whitespace-nowrap ${
+                      className={`h-11 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors active:scale-[0.99] border md:backdrop-blur-md whitespace-nowrap ${
                         isDark
                           ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border-purple-400/30'
                           : 'bg-purple-100 hover:bg-purple-200 text-purple-800 border-purple-300'
@@ -599,16 +599,16 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
         {/* PASS & PLAY (2 PLAYERS) POPUP MODAL FOR PLAYER 2 NAME & INITIAL GOATS */}
         {isPassModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 md:bg-black/70 md:backdrop-blur-md animate-fade-in"
             role="dialog"
             aria-modal="true"
             aria-labelledby="pass-modal-title"
           >
             <div
-              className={`relative w-full max-w-md rounded-3xl p-5 sm:p-6 border transition-all backdrop-blur-2xl ${
+              className={`relative w-full max-w-md rounded-3xl p-5 sm:p-6 border transition-colors md:backdrop-blur-2xl ${
                 isDark
-                  ? 'bg-slate-900/95 border-white/20 text-white shadow-[0_24px_64px_rgba(0,0,0,0.85)]'
-                  : 'bg-white/95 border-slate-200 text-slate-900 shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
+                  ? 'bg-slate-900 md:bg-slate-900/95 border-white/20 text-white shadow-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.85)]'
+                  : 'bg-white md:bg-white/95 border-slate-200 text-slate-900 shadow-2xl md:shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
               }`}
             >
               <button
@@ -769,10 +769,10 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
 
         {/* SEE LIVE MATCHES SECTION */}
         <div
-          className={`mt-5 rounded-3xl p-4 sm:p-6 transition-all duration-300 backdrop-blur-2xl border ${
+          className={`mt-5 rounded-3xl p-4 sm:p-6 transition-colors duration-300 md:backdrop-blur-2xl border ${
             isDark
-              ? 'bg-slate-900/60 border-white/15 shadow-[0_16px_48px_rgba(0,0,0,0.45)]'
-              : 'bg-white/80 border-slate-200/90 shadow-[0_16px_40px_rgba(15,23,42,0.08)]'
+              ? 'bg-slate-900/95 md:bg-slate-900/60 border-white/15 shadow-lg md:shadow-[0_16px_48px_rgba(0,0,0,0.45)]'
+              : 'bg-white/95 md:bg-white/80 border-slate-200/90 shadow-md md:shadow-[0_16px_40px_rgba(15,23,42,0.08)]'
           }`}
         >
           <div className="flex items-center justify-between gap-2 mb-3.5">
@@ -956,10 +956,10 @@ export const RoomLobby: React.FC<RoomLobbyProps> = ({
         {/* ABOUT BAGHA CHHELI SECTION */}
         <section
           aria-label="About Bagha Chheli"
-          className={`mt-5 rounded-3xl p-4 sm:p-6 transition-all duration-300 backdrop-blur-2xl border ${
+          className={`mt-5 rounded-3xl p-4 sm:p-6 transition-colors duration-300 md:backdrop-blur-2xl border ${
             isDark
-              ? 'bg-slate-900/55 border-white/15 shadow-[0_16px_48px_rgba(0,0,0,0.4)]'
-              : 'bg-white/80 border-slate-200/90 shadow-[0_16px_40px_rgba(15,23,42,0.06)]'
+              ? 'bg-slate-900/95 md:bg-slate-900/55 border-white/15 shadow-lg md:shadow-[0_16px_48px_rgba(0,0,0,0.4)]'
+              : 'bg-white/95 md:bg-white/80 border-slate-200/90 shadow-md md:shadow-[0_16px_40px_rgba(15,23,42,0.06)]'
           }`}
         >
           <div className="flex items-center gap-2.5 mb-3">

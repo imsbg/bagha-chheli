@@ -15,10 +15,10 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, theme, lang }) => 
   return (
     <main className="flex-1 flex flex-col items-center justify-center px-3 sm:px-6 py-6 sm:py-10 relative z-10 w-full max-w-3xl mx-auto">
       <article
-        className={`w-full rounded-3xl p-5 sm:p-8 border transition-all duration-300 backdrop-blur-2xl ${
+        className={`w-full rounded-3xl p-5 sm:p-8 border transition-colors duration-300 md:backdrop-blur-2xl ${
           isDark
-            ? 'bg-slate-900/75 border-white/15 text-white shadow-[0_24px_64px_rgba(0,0,0,0.55)]'
-            : 'bg-white/85 border-white text-slate-900 shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
+            ? 'bg-slate-900/95 md:bg-slate-900/75 border-white/15 text-white shadow-xl md:shadow-[0_24px_64px_rgba(0,0,0,0.55)]'
+            : 'bg-white/95 md:bg-white/85 border-slate-200 md:border-white text-slate-900 shadow-lg md:shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
         }`}
       >
         <div className="flex items-center justify-between gap-3 mb-6">

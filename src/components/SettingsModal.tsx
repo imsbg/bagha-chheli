@@ -74,12 +74,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 md:bg-black/65 md:backdrop-blur-md animate-fade-in">
       <div
-        className={`relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-5 sm:p-6 border transition-all backdrop-blur-2xl ${
+        className={`relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-5 sm:p-6 border transition-colors md:backdrop-blur-2xl ${
           isDark
-            ? 'bg-slate-900/90 border-white/20 text-white shadow-[0_24px_64px_rgba(0,0,0,0.75)]'
-            : 'bg-white/95 border-white text-slate-900 shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
+            ? 'bg-slate-900 md:bg-slate-900/90 border-white/20 text-white shadow-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.75)]'
+            : 'bg-white md:bg-white/95 border-slate-200 md:border-white text-slate-900 shadow-2xl md:shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
         }`}
       >
         <button

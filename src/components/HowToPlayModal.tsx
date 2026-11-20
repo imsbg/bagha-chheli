@@ -32,16 +32,16 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 md:bg-black/70 md:backdrop-blur-md animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="how-to-play-title"
     >
       <div
-        className={`relative w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl p-5 sm:p-7 border transition-all backdrop-blur-2xl ${
+        className={`relative w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl p-5 sm:p-7 border transition-colors md:backdrop-blur-2xl ${
           isDark
-            ? 'bg-slate-900/95 border-white/20 text-white shadow-[0_24px_64px_rgba(0,0,0,0.8)]'
-            : 'bg-white/95 border-slate-200 text-slate-900 shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
+            ? 'bg-slate-900 md:bg-slate-900/95 border-white/20 text-white shadow-2xl md:shadow-[0_24px_64px_rgba(0,0,0,0.8)]'
+            : 'bg-white md:bg-white/95 border-slate-200 text-slate-900 shadow-2xl md:shadow-[0_24px_64px_rgba(15,23,42,0.25)]'
         }`}
       >
         {/* Modal Header + Quick Overview Badges + Close Button */}

@@ -34,10 +34,10 @@ export const BoardReactionOverlay: React.FC<ReactionFloaterProps> = ({ reactions
             animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
             exit={{ opacity: 0, scale: 0.75, y: -12 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className={`px-3.5 py-2 rounded-2xl border shadow-xl backdrop-blur-2xl flex items-center gap-2.5 ${
+            className={`px-3.5 py-2 rounded-2xl border shadow-xl md:backdrop-blur-2xl flex items-center gap-2.5 ${
               isDark
-                ? 'bg-slate-900/95 border-amber-500/40 text-white shadow-[0_10px_30px_rgba(0,0,0,0.7)]'
-                : 'bg-white/95 border-amber-400/60 text-slate-900 shadow-[0_10px_30px_rgba(15,23,42,0.2)]'
+                ? 'bg-slate-900 border-amber-500/40 text-white shadow-xl md:shadow-[0_10px_30px_rgba(0,0,0,0.7)]'
+                : 'bg-white border-amber-400/60 text-slate-900 shadow-xl md:shadow-[0_10px_30px_rgba(15,23,42,0.2)]'
             }`}
           >
             <motion.span
@@ -85,10 +85,10 @@ export const ReactionBar: React.FC<ReactionBarProps> = ({ onSendReaction, theme,
 
   return (
     <div
-      className={`w-full rounded-2xl px-3 py-2 flex items-center justify-between gap-2 backdrop-blur-xl border transition-colors ${
+      className={`w-full rounded-2xl px-3 py-2 flex items-center justify-between gap-2 md:backdrop-blur-xl border transition-colors ${
         isDark
-          ? 'bg-slate-900/60 border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.35)]'
-          : 'bg-white/80 border-slate-200/90 shadow-[0_8px_24px_rgba(15,23,42,0.06)]'
+          ? 'bg-slate-900/95 md:bg-slate-900/60 border-white/15 shadow-md md:shadow-[0_8px_24px_rgba(0,0,0,0.35)]'
+          : 'bg-white/95 md:bg-white/80 border-slate-200/90 shadow-sm md:shadow-[0_8px_24px_rgba(15,23,42,0.06)]'
       }`}
     >
       <span
